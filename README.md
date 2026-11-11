@@ -4,7 +4,7 @@ A weather app built for IYF Weekend Academy Season 12, Week 6 (Asynchronous Java
 
 ## Live Demo
 
-https://YOUR-USERNAME.github.io/iyf-s12-week-06-YOUR-USERNAME/
+https://tashleyfai.github.io/iyf-s12-week-06-TashleyFai/
 
 ## Features
 
