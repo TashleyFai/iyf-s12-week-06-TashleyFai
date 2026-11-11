@@ -1,0 +1,24 @@
+// Day 2: Promise Chain with random delays, and total time
+function randomDelay(label) {
+    const ms = Math.floor(Math.random() * 1000) + 200;
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log(`${label} finished after ${ms}ms`);
+            resolve(label);
+        }, ms);
+    });
+}
+
+const stepOne = () => randomDelay("Step 1");
+const stepTwo = () => randomDelay("Step 2");
+const stepThree = () => randomDelay("Step 3");
+
+const start = Date.now();
+
+stepOne()
+    .then(stepTwo)
+    .then(stepThree)
+    .then(() => {
+        console.log(`Total time: ${Date.now() - start}ms`);
+    })
+    .catch((error) => console.error("Error:", error));
