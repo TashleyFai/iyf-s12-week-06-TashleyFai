@@ -1,0 +1,38 @@
+// Day 4: callback code rewritten with async/await
+
+// BEFORE (callbacks)
+function orderFoodCallback(item, callback) {
+    setTimeout(() => callback(`${item} ordered`), 500);
+}
+function cookFoodCallback(order, callback) {
+    setTimeout(() => callback(`${order} -> cooked`), 500);
+}
+function serveFoodCallback(cooked, callback) {
+    setTimeout(() => callback(`${cooked} -> served`), 500);
+}
+
+orderFoodCallback("Pizza", (ordered) => {
+    cookFoodCallback(ordered, (cooked) => {
+        serveFoodCallback(cooked, (served) => {
+            console.log("Callbacks:", served);
+        });
+    });
+});
+
+// AFTER (promises + async/await)
+const orderFood = (item) => new Promise((resolve) => setTimeout(() => resolve(`${item} ordered`), 500));
+const cookFood = (order) => new Promise((resolve) => setTimeout(() => resolve(`${order} -> cooked`), 500));
+const serveFood = (cooked) => new Promise((resolve) => setTimeout(() => resolve(`${cooked} -> served`), 500));
+
+async function main() {
+    try {
+        const ordered = await orderFood("Burger");
+        const cooked = await cookFood(ordered);
+        const served = await serveFood(cooked);
+        console.log("Async/await:", served);
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+main();
