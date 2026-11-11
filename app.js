@@ -1,125 +1,137 @@
+// API_KEY is NOT declared here: it comes from config.js (git-ignored), loaded first.
+// Never paste your key into this file.
+const BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
+const STORAGE_KEY = "recent";
+const MAX_HISTORY = 5;
+
+// DOM Elements
+const form = document.getElementById("search-form");
 const cityInput = document.getElementById("city-input");
-const searchButton = document.getElementById("search-btn");
 const loading = document.getElementById("loading");
-const errorMessage = document.getElementById("error-message");
-const weatherInfo = document.getElementById("weather-info");
-const historyList = document.getElementById("history-list");
+const error = document.getElementById("error");
+const weatherDisplay = document.getElementById("weather-display");
+const searchHistory = document.getElementById("search-history");
 
-// Search for weather when the button is clicked
-searchButton.addEventListener("click", getWeather);
+// Elements to update
+const cityName = document.getElementById("city-name");
+const weatherIcon = document.getElementById("weather-icon");
+const temperature = document.getElementById("temperature");
+const description = document.getElementById("description");
+const feelsLike = document.getElementById("feels-like");
+const humidity = document.getElementById("humidity");
+const wind = document.getElementById("wind");
+const pressure = document.getElementById("pressure");
 
-// Also search when Enter is pressed
-cityInput.addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        getWeather();
-    }
-});
-
-// Get weather information from the API
-async function getWeather() {
-    const city = cityInput.value.trim();
-
-    if (city === "") {
-        showError("Please enter a city name.");
-        return;
-    }
-
-    loading.classList.remove("hidden");
-    errorMessage.textContent = "";
-    weatherInfo.style.display = "none";
+async function getWeather(city) {
+    const url = `${BASE_URL}?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
 
     try {
-        if (typeof API_KEY === "undefined" || API_KEY === "") {
-            throw new Error("API key is missing. Please add your OpenWeatherMap API key.");
-        }
-
-        const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
+        showLoading();
+        hideError();
 
         const response = await fetch(url);
 
+        // fetch does not reject on 404/401, so check response.ok
         if (!response.ok) {
-            throw new Error("City not found or weather data unavailable.");
+            if (response.status === 404) throw new Error("City not found. Check the spelling and try again.");
+            if (response.status === 401) throw new Error("API key not valid yet: new keys can take up to 2 hours to activate");
+            throw new Error("Failed to fetch weather data");
         }
 
         const data = await response.json();
-
         displayWeather(data);
         saveToHistory(data.name);
 
-    } catch (error) {
-        showError(error.message);
+    } catch (err) {
+        // fetch itself rejects (TypeError) only when there is no network at all
+        showError(err.name === "TypeError" ? "Network error: check your internet connection" : err.message);
     } finally {
-        loading.classList.add("hidden");
+        hideLoading();
     }
 }
 
-// Display the weather information
 function displayWeather(data) {
-    document.getElementById("city-name").textContent =
-        data.name + ", " + data.sys.country;
+    const info = data.weather[0];
 
-    document.getElementById("temperature").textContent =
-        Math.round(data.main.temp) + "°C";
+    cityName.textContent = `${data.name}, ${data.sys.country}`;
+    weatherIcon.src = `https://openweathermap.org/img/wn/${info.icon}@2x.png`;
+    weatherIcon.alt = info.description;
+    temperature.textContent = `${Math.round(data.main.temp)}°C`;
+    description.textContent = info.description;
+    feelsLike.textContent = `${Math.round(data.main.feels_like)}°C`;
+    humidity.textContent = `${data.main.humidity}%`;
+    wind.textContent = `${data.wind.speed} m/s`;
+    pressure.textContent = `${data.main.pressure} hPa`;
 
-    document.getElementById("description").textContent =
-        data.weather[0].description;
-
-    document.getElementById("feels-like").textContent =
-        Math.round(data.main.feels_like) + "°C";
-
-    document.getElementById("humidity").textContent =
-        data.main.humidity + "%";
-
-    document.getElementById("wind").textContent =
-        data.wind.speed + " m/s";
-
-    document.getElementById("pressure").textContent =
-        data.main.pressure + " hPa";
-
-    const iconCode = data.weather[0].icon;
-
-    document.getElementById("weather-icon").src =
-        `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-
-    weatherInfo.style.display = "block";
+    weatherDisplay.classList.remove("hidden");
 }
 
-// Display an error message
+function showLoading() {
+    loading.classList.remove("hidden");
+    weatherDisplay.classList.add("hidden");
+}
+
+function hideLoading() {
+    loading.classList.add("hidden");
+}
+
 function showError(message) {
-    errorMessage.textContent = message;
+    error.textContent = message;
+    error.classList.remove("hidden");
+    weatherDisplay.classList.add("hidden");
 }
 
-// Save the last five city searches
+function hideError() {
+    error.classList.add("hidden");
+}
+
+function readHistory() {
+    try {
+        const recent = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        return Array.isArray(recent) ? recent : [];
+    } catch (err) {
+        return [];
+    }
+}
+
 function saveToHistory(city) {
-    let history = JSON.parse(localStorage.getItem("weatherHistory")) || [];
-
-    history = history.filter(item => item !== city);
-    history.unshift(city);
-    history = history.slice(0, 5);
-
-    localStorage.setItem("weatherHistory", JSON.stringify(history));
-
+    // Newest first, no duplicates, keep only the last 5
+    const recent = readHistory().filter((c) => c.toLowerCase() !== city.toLowerCase());
+    recent.unshift(city);
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(recent.slice(0, MAX_HISTORY)));
+    } catch (err) {
+        // storage blocked or full: the app still works without history
+    }
     loadHistory();
 }
 
-// Display saved searches
 function loadHistory() {
-    const history = JSON.parse(localStorage.getItem("weatherHistory")) || [];
+    const recent = readHistory();
+    searchHistory.innerHTML = "";
 
-    historyList.innerHTML = "";
-
-    history.forEach(city => {
+    recent.forEach((city) => {
         const li = document.createElement("li");
-        li.textContent = city;
-
-        li.addEventListener("click", function() {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = city;
+        btn.addEventListener("click", () => {
             cityInput.value = city;
-            getWeather();
+            getWeather(city);
         });
-
-        historyList.appendChild(li);
+        li.appendChild(btn);
+        searchHistory.appendChild(li);
     });
 }
 
-// Load previous searches when the page opens
+// Event Listeners (submit covers both the button and the Enter key)
+form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const city = cityInput.value.trim();
+    if (city) {
+        getWeather(city);
+    }
+});
+
+// Initialize
 loadHistory();
