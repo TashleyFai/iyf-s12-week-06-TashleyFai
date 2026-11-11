@@ -1,126 +1,127 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+:root {
+  --bg: #e6eff4;
+  --ink: #0f2a43;
+  --muted: #4f6a80;
+  --panel: #ffffff;
+  --line: #c3d4df;
+  --accent: #1f6f8b;
+  --warm: #e8912d;
+  --error: #b3261e;
 }
+
+* { box-sizing: border-box; }
 
 body {
-    font-family: Arial, sans-serif;
-    background: #eaf2f8;
-    min-height: 100vh;
-    padding: 30px 15px;
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  line-height: 1.5;
 }
 
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+.hidden { display: none !important; }
+
+.weather-app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
 }
 
-h1 {
-    text-align: center;
-    color: #1f4e79;
-    margin-bottom: 25px;
+h1 { margin: 0 0 20px; font-size: 1.8rem; }
+
+#search-form { display: flex; gap: 8px; }
+
+#city-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
 }
 
-.search-box {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+#search-form button {
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.search-box input {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
+input:focus-visible, button:focus-visible {
+  outline: 3px solid var(--warm);
+  outline-offset: 2px;
 }
 
-.search-box button {
-    padding: 12px 20px;
-    background: #1f6feb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+#loading { margin-top: 20px; color: var(--muted); font-weight: 500; }
+
+.error {
+  margin-top: 20px;
+  padding: 12px 14px;
+  color: var(--error);
+  background: #fdecea;
+  border: 1px solid #f3c1bd;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
-.search-box button:hover {
-    background: #1557b0;
+#weather-display {
+  margin-top: 20px;
+  padding: 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
 
-#weather-info {
-    text-align: center;
-    padding: 20px;
+.weather-main { text-align: center; }
+.weather-main h2 { margin: 0; font-size: 1.5rem; }
+.weather-main img { width: 100px; height: 100px; }
+#temperature { margin: 0; font-size: 4rem; font-weight: 700; line-height: 1; color: var(--accent); }
+#description { margin: 6px 0 20px; color: var(--muted); text-transform: capitalize; }
+
+.weather-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-#weather-icon {
-    width: 80px;
-    height: 80px;
+.detail {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
 }
 
-#temperature {
-    font-size: 32px;
-    color: #1f4e79;
-    margin: 10px 0;
-}
+.detail span:first-child { font-size: 0.85rem; color: var(--muted); }
+.detail span:last-child { font-size: 1.15rem; font-weight: 600; }
 
-#weather-info p {
-    margin: 10px 0;
-    color: #444;
-}
-
-#loading {
-    text-align: center;
-    color: #1f6feb;
-    margin: 15px 0;
-}
-
-.hidden {
-    display: none;
-}
-
-#error-message {
-    color: red;
-    text-align: center;
-    margin: 10px 0;
-}
+#recent-searches { margin-top: 28px; }
+#recent-searches h3 { margin: 0 0 8px; font-size: 1rem; color: var(--muted); }
 
 #search-history {
-    margin-top: 20px;
-    border-top: 1px solid #ddd;
-    padding-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-#search-history h3 {
-    color: #1f4e79;
-    margin-bottom: 10px;
+#search-history button {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
 }
 
-#history-list {
-    list-style: none;
-}
-
-#history-list li {
-    padding: 8px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-#history-list li:hover {
-    background: #eaf2f8;
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 20px;
-    }
-
-    .search-box {
-        flex-direction: column;
-    }
-}
+#search-history button:hover { border-color: var(--accent); }
